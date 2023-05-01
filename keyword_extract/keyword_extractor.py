@@ -8,9 +8,9 @@ class KeywordExtractor() :
         Constructor
         1. text : 들어온 문장
         2. keyword_set : keyword 사전
-        3. keyword_label_list : eojeol에 keyword를 포함 여부 저장
+        3. keyword_label_list : 어절에 keyword를 포함 여부 저장
     '''
-    def __init__(self, text: str, in_dir: str, encoding="UTF-8") :
+    def __init__(self, text:str, in_dir: str, encoding="UTF-8") :
         self.text = text
         self.keyword_set = set()
         self.keyword_label_list = []
@@ -19,31 +19,28 @@ class KeywordExtractor() :
 
     '''
         Methods
-        1. _set 
+        1. _set
         2. load
-        3. _print 
+        3. _print
     '''
 
     '''
+        1. _set
+        클래스의 초기값을 설정하는 기능
+        keywordExtractor의 keyword_set, keyword_label_list의 초기 값을 설정
     '''
     def _set(self, in_dir: str, encoding: str, label_default=0) :
         self.load(in_dir, encoding)
 
-        sentence = Sentence(self.text)
+        sentence = Sentence(self.text)    
+        eojeol_len = len(sentence.eojeol_list)
 
-        for eojeol in sentence.eojeol_list :
-            emjeol_len = len(eojeol)
-
-            for i in range(emjeol_len) :
-                if eojeol[:i] in self.keyword_set :
-                    self.keyword_label_list.append(label_default + 1)
-                    label_default = 0
-                    break
-
-                if i == emjeol_len - 1 :
-                    self.keyword_label_list.append(label_default)
+        for _ in range(eojeol_len) :
+            self.keyword_label_list.append(label_default)
 
     '''
+        2. load
+        keyword목록을 불러오는 기능
     '''
     def load(self, in_file_path: str, encoding: str) :
         file_paths = file_util.get_file_paths(in_file_path, True)
@@ -66,7 +63,11 @@ class KeywordExtractor() :
 
                 self.keyword_set.add(line)
 
+        in_file.close()
+
     '''
+        3. _print
+        세팅된 값을 확인하는 기능
     '''
     def _print(self) :
         print(f"sentence : {self.text}\n")
@@ -76,13 +77,3 @@ class KeywordExtractor() :
         print(f"all keyword_set : {self.keyword_set}\n")
         
         print(f"keyword_label_list : {self.keyword_label_list}\n")
-
-# main
-if __name__ == "__main__" :
-    work_dir = "../../"
-    in_dir = work_dir + "data/keyword_extract/"
-
-    text = "가라루파는 터키의 온천에 사는 민물고기이다."
-
-    keyword = KeywordExtractor(text, in_dir)
-    keyword._print()
