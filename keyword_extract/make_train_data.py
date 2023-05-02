@@ -54,14 +54,13 @@ class MakeTrainData() :
             eojeol_len = len(line)
 
             # keyword_labeling
-            idx = 0
             # 문장을 어절 단위로 쪼갠 후 keyword_labeling 진행
+            idx = 0
             for eojeol in line :
-                emjeol_len = len(eojeol)
 
                 # 어절을 음절 단위로 쪼갠 후 keyword 목록에 있는지 확인하고 있다면 1로 labeling
-                for i in range(emjeol_len) :
-                    if eojeol[:i] in keyword.keyword_set :
+                for word in sorted(list(keyword.keyword_set), reverse=True) :
+                    if eojeol.startswith(word) :
                         keyword.keyword_label_list[idx] = 1
                 idx += 1
             
