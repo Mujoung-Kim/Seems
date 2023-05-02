@@ -37,7 +37,6 @@ class MakeTrainData() :
     def _make_file(self, in_file_path: str, in_keyword_dir: str, out_file_path: str, encoding: str, delim: str, window_size) :
         in_file = file_util.open_file(in_file_path, encoding, "r")
         out_file = file_util.open_file(out_file_path, encoding, "a")
-        out_file.write(f"train{delim}label\n")
 
         while True :
             line = in_file.readline()
