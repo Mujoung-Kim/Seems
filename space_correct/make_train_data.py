@@ -48,6 +48,7 @@ class MakeTrainData:
 
 if __name__ == "__main__":
     work_dir = '../../'
+    # work_dir = "C:/Users/user/Desktop/nlp_project/data/input/sejong_sentence_sample.txt"
     in_dir = work_dir + 'data/input/sentences'
     out_file_path = work_dir + 'data/space_correct/train_data_out.txt'
     encoding = "utf-8"

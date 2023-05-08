@@ -19,7 +19,7 @@ def get_window(in_list: list, idx: int, window_size: int, delim=''):
     # 앞 부분 저장
     start = idx - window_size
     if start < 0:
-        result.append('#'*(start*-1))
+        result.append('$'*(start*-1))
         start = 0
     
     if start < idx:
