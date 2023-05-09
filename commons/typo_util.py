@@ -1,8 +1,7 @@
-import re
-import random
-from module.jamolist import CHO, JUNG, JONG, TYPO, ggub_jong, ggub_jung, reversed_ggub_jong, reversed_ggub_jung, ssang_jaeum
-from module import typo_util
+from _init import *
+import re, random
 
+from commons.jamolist import *
 
 def random_idx(something):
     if type(something) == int:
@@ -31,6 +30,12 @@ def divide_jamo(emjeol_str):
     else : 
         return emjeol_str
     
+def convert_eojeol_jamo(eojeol_str):
+    eojeol_jamo = ''
+    for emjeol_str in eojeol_str:
+        eojeol_jamo += divide_jamo(emjeol_str)
+    return eojeol_jamo
+    
 def get_unicode_number(emjeol_str):
     emjeol_code = ord(emjeol_str)
     chosung_index = int((emjeol_code - 44032) / 588)
@@ -54,7 +59,7 @@ def convert_jamo_hangeul(emjeol_jamo_str):
                 jong_idx = JONG.index(emjeol_jamo_str[2])
             except:
                 jong_idx = 0
-            emjeol_str = chr(typo_util.get_hangeul_unicode(cho_idx, jung_idx, jong_idx))
+            emjeol_str = chr(get_hangeul_unicode(cho_idx, jung_idx, jong_idx))
     else:
         return emjeol_jamo_str
     
@@ -121,7 +126,7 @@ def make_eojeol_typo(eojeol_list, eojeol_label_list):
         eojeol_str = eojeol_list[0]; eojeol_idx = 0
 
     emjeol_idx = random_idx(eojeol_str)
-    emjeol_jamo = typo_util.divide_jamo(eojeol_str[emjeol_idx])
+    emjeol_jamo = divide_jamo(eojeol_str[emjeol_idx])
     jamo_idx = random_idx(emjeol_jamo)
     typo_idx = random_idx(TYPO[emjeol_jamo[jamo_idx]])
     emjeol_jamo = emjeol_jamo[:jamo_idx] + TYPO[emjeol_jamo[jamo_idx]][typo_idx] + emjeol_jamo[jamo_idx +1:]
