@@ -1,6 +1,7 @@
 from _init import *
 
 import random
+import numpy as np
 
 from commons import file_util
 from transformers import BertTokenizer
@@ -79,26 +80,32 @@ class DataReformator:
         return [train_data, val_data, test_data]
 
 
-    def reformating(self, datas, bert_model_name, max_len):       
+    def reformating(self, datas, max_len, bert_model_name='klue/bert-base'):       
         tokenizer = BertTokenizer.from_pretrained(bert_model_name)
 
-        data_xs = []
-        data_ys = []
+        encodeds, masks, segments, labels = [], [], [], []
 
         data_len = len(datas[0])
         for i in range(data_len):
             text = datas[0][i]                                                                              # text (우리가 넘겨주는 하나의 입력)
-            label = datas[1][i]                                                                             # label (대응되는 하나의 레이블)
+            label = int(datas[1][i])                                                                        # label (대응되는 하나의 레이블)
 
             encoded = tokenizer.encode(text, truncation=True, padding='max_length', max_length=max_len)     # token_ids
             num_zeros = encoded.count(0)
             mask = [1] * (max_len - num_zeros) + [0] * num_zeros                                            # attention_mask
             segment = [0]*max_len                                                                           # token_type_ids
 
-            data_xs.append([encoded, mask, segment])
-            data_ys.append(label)
+            encodeds.append(encoded)
+            masks.append(mask)
+            segments.append(segment)
+            labels.append(label)
         
-        return [data_xs, data_ys]
+        encodeds = np.array(encodeds)
+        masks = np.array(masks)
+        segments = np.array(segments)
+        labels = np.array(labels)
+        
+        return [encodeds, masks, segments], labels
     
     ## 우리가 입력으로 넣은 텍스트는 실제 버트 모델의 입력으로 사용되는 것이 아니라, 실제 버트 모델이 사용하는 입력의 형태로 변환해서 넘겨줘야 함
     ##  - 입력 텍스트 : 1###이건테스
