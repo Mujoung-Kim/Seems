@@ -10,14 +10,13 @@ from transformers import TFBertForSequenceClassification
 class Trainer:
     '''
         Constructor
-        1. model_name : 
-        2. device : 
-        3. our_model : 
+        1. model_name : 사용할 Bert 모델 이름
+        2. device : cpu or gpu
+        3. our_model : 학습된 모델
     '''
     def __init__(self, model_name='klue/bert-base') :
         self.model_name = model_name
         self.device = ""
-
         self.our_model = None
 
         self._set()
@@ -54,7 +53,7 @@ class Trainer:
         klue/bert-base train function
         parameter : 학습용 데이터(data_xs, data_ys), 검증용 데이터(val_xs, val_ys), 모델 저장 경로(out_model_path), 학습 최대 사이클(epochs), 한 번에 학습시킬 데이터의 수(batch_size), 학습 수치(learning_rate), 성능 개선이 이뤄지지 않을 때 최대 시행 횟수(patience), 입력 데이터의 최대 길이(max_seq_len), 라벨의 갯수(num_labels)
     '''
-    def train(self, data_xs, data_ys, val_xs, val_ys, out_model_path: str, epochs: int, batch_size: int, _learning_rate: float, patience: int, max_seq_len: int, dropout_rate=0.3, num_labels=2) :
+    def train(self, data_xs, data_ys, val_xs, val_ys, out_model_path: str, out_best_model_path: str, epochs: int, batch_size: int, _learning_rate: float, patience: int, max_seq_len: int, dropout_rate=0.3, num_labels=2) :
         pretrained_model = TFBertForSequenceClassification.from_pretrained(
             self.model_name,					# model_name
             num_labels=num_labels,				# 분류 갯수
@@ -62,9 +61,9 @@ class Trainer:
         )
 
         # input data shape define
-        token_inputs = tf.keras.layers.Input((max_seq_len,), dtype="int64", name='input_word_ids')
-        mask_inputs = tf.keras.layers.Input((max_seq_len), dtype="int64", name='input_masks')
-        segment_inputs = tf.keras.layers.Input((max_seq_len,), dtype="int64", name='input_segment')
+        token_inputs = tf.keras.layers.Input((max_seq_len,), dtype=tf.int32, name='input_word_ids')
+        mask_inputs = tf.keras.layers.Input((max_seq_len), dtype=tf.int32, name='input_masks')
+        segment_inputs = tf.keras.layers.Input((max_seq_len,), dtype=tf.int32, name='input_segment')
         bert_outputs = pretrained_model([token_inputs, mask_inputs, segment_inputs])
 
         # hidden_layer
@@ -106,7 +105,15 @@ class Trainer:
             # best model save
             if best_acc <= acc :
                 best_acc = acc
-                self.our_model.save(out_model_path)
+                self.our_model.save(out_best_model_path)
+
+                # weight load
+                self.our_model = tf.keras.models.load_model(out_best_model_path, custom_objects={"TFBertForSequenceClassification" : TFBertForSequenceClassification})
+            else :
+                self.out_model.save(out_model_path)
+
+                # weight load
+                self.our_model = tf.keras.models.load_model(out_model_path, custom_objects={"TFBertForSequenceClassification" : TFBertForSequenceClassification})
 
             # early stopping
             if round(fit_out.history["loss"][0], 4) < best_loss :
@@ -118,9 +125,9 @@ class Trainer:
                 if counter >= patience :
                     print("Early stopping")
                     break
-            
-            # weight load
-            self.our_model = tf.keras.models.load_model(out_model_path, custom_objects={"TFBertForSequenceClassification" : TFBertForSequenceClassification})
+
+        # best model load
+        self.our_model = tf.keras.models.load_model(out_best_model_path, custom_objects={"TFBertForSequenceClassification" : TFBertForSequenceClassification})
 
     # 삭제 예정
     def eval(self, model, data_xs, data_ys, batch_size: int, _learning_rate: float) :
