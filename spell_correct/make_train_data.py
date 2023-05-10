@@ -1,12 +1,16 @@
 from _init import *
 
+import pickle
+
 from commons import file_util, container_util
 from commons.sentence import Sentence
-from module import typo_util
+# from freq_maker.term_freq_maker import TermFreqMaker
+from commons import typo_util
 
 class MakeTrainData:
     def __init__(self):
         self.typo_dict = {}
+        self.term_freq_dict = {}
 
     def make_folder(self, in_dir: str, out_file_ox_path: str, out_file_typo_path:str, encoding: str, delim: str, window_size):
         # if file_util.exists(out_file_ox_path):
@@ -15,15 +19,16 @@ class MakeTrainData:
         #     os.remove(out_file_typo_path)
 
         in_file_paths = file_util.get_file_paths(in_dir, True)
+        print('-', in_file_paths)
         for in_file_path in in_file_paths:
             self._make_file(in_file_path, out_file_ox_path, out_file_typo_path, encoding, window_size)
         
-        # self.write_typo_dataset(out_file_typo_path, encoding, delim)
-
     def _make_file(self, in_file_path: str, out_file_ox_path:str, out_file_typo_path:str, encoding: str, window_size):
+        file_name = file_util.get_file_name(in_file_path)
+
         in_file = file_util.open_file(in_file_path, encoding, 'r')
-        out_ox_file = file_util.open_file(out_file_ox_path, encoding, 'a')
-        out_typo_file = file_util.open_file(out_file_typo_path, encoding, 'a')
+        out_ox_file = file_util.open_file(out_file_ox_path + file_name, encoding, 'a')
+        out_typo_file = file_util.open_file(out_file_typo_path + file_name, encoding, 'a')
         
         while 1:
             line = in_file.readline()
@@ -60,6 +65,10 @@ class MakeTrainData:
         in_file.close()
         out_ox_file.close()
         out_typo_file.close()
+    
+    def load_file(self, freq_in_dir: str):
+        with open(freq_in_dir, 'rb') as fr:
+            self.term_freq_dict = pickle.load(fr)
 
     def write_spell_dataset(self, out_file, eojeol_list:list, eojeol_label_list, window_size:int):
 
@@ -76,12 +85,14 @@ class MakeTrainData:
 
 
 if __name__ == "__main__":
-    work_dir = ''
-    in_dir = work_dir + 'data/input/'
-    out_file_ox_path = work_dir + 'data/spell_correct/spell_ox/train_data_out.txt'
-    out_file_typo_path = work_dir + 'data/spell_correct/spell_typo/train_data_out.txt'
-    encoding = "utf-8"
     delim = '\t'
-    
+    encoding = "utf-8"
+
+    work_dir = 'data/'
+    in_dir = work_dir + 'input/'
+
+    out_file_ox_path = work_dir + 'spell_correct/spell_ox/'
+    out_file_typo_path = work_dir + 'spell_correct/spell_typo/'
+
     train_data_maker = MakeTrainData()
     train_data_maker.make_folder(in_dir, out_file_ox_path, out_file_typo_path, encoding, delim, 3)
