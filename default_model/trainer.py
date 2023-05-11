@@ -1,5 +1,6 @@
 from _init import *
 
+import json
 import torch
 import numpy as np
 import tensorflow as tf
@@ -8,30 +9,58 @@ import tensorflow_addons as tfa
 from transformers import TFBertForSequenceClassification
 from tensorflow.python.keras.callbacks import EarlyStopping, ModelCheckpoint
 
-class Trainer:
+class DefaultModel:
     '''
         Constructor
         1. model_name : 사용할 Bert 모델 이름
-        2. device : cpu or gpu
-        3. our_model : 학습된 모델
+        2. max_seq_len : 입력할 데이터의 길이
+        3. device : cpu or gpu
+        4. our_model : 학습된 모델
     '''
-    def __init__(self, model_name='klue/bert-base') :
+    def __init__(self, max_seq_len: int, dropout_rate=0.3, num_labels=2, model_name='klue/bert-base') :
         self.model_name = model_name
+        self.max_seq_len = max_seq_len
         self.device = ""
-        self.our_model = None
+        self.our_model = self._init_model(dropout_rate, num_labels)
 
-        self._set()
     '''
         Methods
-        1. _set
-        2. available_gpu
-        3. train
-        4. eval
-        5. get_model
-        6. performance_measure
+        1. _check_env
+        2. _init_model
+        3. available_gpu
+        4. train
+        5. performance_measure
+        6. load_model
     '''
-    def _set(self) :
+    def _check_env(self) :
         self.available_gpu()
+
+    # model initializer
+    def _init_model(self, dropout_rate: float, num_labels: int) :
+        pretrained_model = TFBertForSequenceClassification.from_pretrained(
+            self.model_name,                # model_name
+            num_labels=num_labels,          # 분류 갯수
+            from_pt=True                    # model convert & load 여부
+        )
+
+        # input data shape define
+        token_inputs = tf.keras.layers.Input((self.max_seq_len, ), dtype=tf.int32, name="input_word_ids")
+        mask_inputs = tf.keras.layers.Input((self.max_seq_len), dtype=tf.int32, name="input_masks")
+        segment_inputs = tf.keras.layers.Input((self.max_seq_len,), dtype=tf.int32, name="input_segment")
+        bert_outputs = pretrained_model([token_inputs, mask_inputs, segment_inputs])
+
+        # hidden_layer
+        dropout = tf.keras.layers.Dropout(dropout_rate)(bert_outputs[0])
+        layer = tf.keras.layers.Dense(128, activation="relu")(dropout)
+        dropout = tf.keras.layers.Dropout(dropout_rate)(layer)
+        layer = tf.keras.layers.Dense(64, activation="relu")(dropout)
+        layer = tf.keras.layers.Dense(num_labels, activation="softmax", kernel_initializer=tf.keras.initializers.TruncatedNormal(stddev=0.02))(layer)
+
+        # our model define
+        model = tf.keras.Model([token_inputs, mask_inputs, segment_inputs], layer)
+        self._check_env()
+
+        return model
 
     # GPU 사용 여부
     def available_gpu(self) :
@@ -54,31 +83,7 @@ class Trainer:
         klue/bert-base train function
         parameter : 학습용 데이터(data_xs, data_ys), 검증용 데이터(val_xs, val_ys), 모델 저장 경로(out_model_path), 학습 최대 사이클(epochs), 한 번에 학습시킬 데이터의 수(batch_size), 학습 수치(learning_rate), 성능 개선이 이뤄지지 않을 때 최대 시행 횟수(patience), 입력 데이터의 최대 길이(max_seq_len), 라벨의 갯수(num_labels)
     '''
-    def train(self, data_xs, data_ys, 
-            #   val_xs, val_ys, out_model_path: str, 
-              out_best_model_path: str, epochs: int, batch_size: int, _learning_rate: float, patience: int, max_seq_len: int, dropout_rate=0.3, num_labels=2) :
-        pretrained_model = TFBertForSequenceClassification.from_pretrained(
-            self.model_name,				# model_name
-            num_labels=num_labels,			# 분류 갯수
-            from_pt=True					# model convert & load 여부
-        )
-
-        # input data shape define
-        token_inputs = tf.keras.layers.Input((max_seq_len,), dtype=tf.int32, name='input_word_ids')
-        mask_inputs = tf.keras.layers.Input((max_seq_len), dtype=tf.int32, name='input_masks')
-        segment_inputs = tf.keras.layers.Input((max_seq_len,), dtype=tf.int32, name='input_segment')
-        bert_outputs = pretrained_model([token_inputs, mask_inputs, segment_inputs])
-
-        # hidden_layer
-        dropout = tf.keras.layers.Dropout(dropout_rate)(bert_outputs[0])
-        layer = tf.keras.layers.Dense(128, activation="relu")(dropout)
-        dropout = tf.keras.layers.Dropout(dropout_rate)(layer)
-        layer = tf.keras.layers.Dense(64, activation="relu")(dropout)
-        layer = tf.keras.layers.Dense(2, activation='softmax', kernel_initializer=tf.keras.initializers.TruncatedNormal(stddev=0.02))(layer)
-
-        # our model define
-        self.our_model = tf.keras.Model([token_inputs, mask_inputs, segment_inputs], layer)
-
+    def train(self, data_xs, data_ys, out_best_model_path: str, epochs: int, batch_size: int, _learning_rate: float, patience: int) :
         # optimzer define
         _optimizer = tfa.optimizers.RectifiedAdam(learning_rate=_learning_rate,
                                                  total_steps=10000 * epochs,
@@ -146,14 +151,29 @@ class Trainer:
             #         print("Early stopping")
             #         break
 
-        # best model load
-        self.our_model = tf.keras.models.load_model(out_best_model_path, custom_objects={"TFBertForSequenceClassification" : TFBertForSequenceClassification})
+        # training config save
+        self.save_parameter(out_best_model_path, batch_size, epochs)
 
-    # 모델 가져오기
-    def get_model(self) :
-        return self.our_model
+        # best model load
+        self.our_model = self.load_model(out_best_model_path)
+
+    # hyperparameter variable save
+    def save_parameter(self, out_param_path: str, batch_size: int, epochs: int) :
+        trainning_config = {
+            "batch_size" : batch_size,
+            "max_len" : self.max_seq_len,
+            "epochs" : epochs
+        }
+
+        with open(f"{out_param_path[:out_param_path.rfind('/')]}/training_config.json", "w") as fw :
+            json.dump(trainning_config, fw)
+
+    # model load function
+    def load_model(self, model_path: str) :
+        return tf.keras.models.load_model(model_path, custom_objects={"TFBertForSequenceClassification":TFBertForSequenceClassification})
     
-    def _predict(self, data_xs, data_ys) :
+    # model accuracy calculator
+    def performance_measure(self, data_xs, data_ys) :
         predict_val = self.our_model.predict(data_xs)
         predict_label = np.argmax(predict_val, axis=1)
         label_len = len(data_ys)
@@ -168,15 +188,16 @@ class Trainer:
 
         print(round(correct_cnt / label_len, 4))
 
-    # 모델의 정확도 계산
-    def performance_measure(self, data_xs, data_ys) :
-        print(_performance_measure(self.our_model, data_xs, data_ys))
-
-# 정확도 계산 메소드
+# 정확도 계산 메소드 -> 이건 돌려봐야 암
 def _performance_measure(model, data_xs, data_ys) :
-    data_ys_predict = np.argmax(model(data_xs), axis = 1)
-    data_len = len(data_ys)
+    predicts = []
+    
+    for data_x in data_xs :
+        predict = model(data_x)
+        predicts.append(predict)
 
+    data_ys_predict = np.argmax(predicts, axis = 1)
+    data_len = len(data_ys)
     correct_cnt = 0
 
     for i in range(data_len):
