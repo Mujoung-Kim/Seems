@@ -39,7 +39,7 @@ def get_window(in_list: list, idx: int, window_size: int, delim=''):
         
         end = end - in_len + 1
         if end > 0:
-            result.append('#'*end)
+            result.append('$$'*end)
     
     return delim.join(result)
 
