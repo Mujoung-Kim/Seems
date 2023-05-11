@@ -19,7 +19,6 @@ class MakeTrainData:
         #     os.remove(out_file_typo_path)
 
         in_file_paths = file_util.get_file_paths(in_dir, False)
-        print('-', in_file_paths)
         for in_file_path in in_file_paths:
             self._make_file(in_file_path, out_file_ox_path, out_file_typo_path, encoding, window_size)
         
