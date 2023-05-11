@@ -5,7 +5,7 @@ from default_model.trainer import Trainer
 
 root_path = "../../"
 in_file_path = root_path + "data/keyword_extract/train_data_out.txt"
-out_model_path = root_path + "resources/keyword_extract_model/bert_model.h5"
+out_model_path = root_path + "resources/keyword_extract/bert_model.h5"
 out_best_model_path = root_path + "resources/keyword_extract/best_bert_model.h5"
 encoding = "utf-8"
 delim = "\t"
