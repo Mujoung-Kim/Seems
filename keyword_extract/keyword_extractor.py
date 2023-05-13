@@ -3,103 +3,123 @@ from _init import *
 from commons import file_util, string_util
 from commons.sentence import Sentence
 
-from josa_extractor import JosaExtractor
-
-class KeywordExtractor() :
+class KeywordExtractor :
     '''
         Constructor
         1. text : 들어온 문장
         2. keyword_set : keyword 사전
         3. keyword_label_list : 어절에 keyword를 포함 여부 저장
     '''
-    def __init__(self, text:str, in_dir: str, encoding="UTF-8") :
-        self.text = text
+    def __init__(self) :
+        self.text = ""
         self.keyword_set = set()
         self.keyword_label_list = []
 
-        self._set(in_dir, encoding)
-
     '''
         Methods
-        1. _set
-        2. load
-        3. add_keyword_set
-        4. _print
+        1. set_text
+        2. _init_label_list
+        3. load_folder
+        4. load_file
+        5. write_keyword_set
+        6. _print
     '''
 
     '''
-        1. _set
-        클래스의 초기값을 설정하는 기능
-        keywordExtractor의 keyword_set, keyword_label_list의 초기 값을 설정
+        1. set_text
+        text 설정 및 keyword_label_list 초기화
     '''
-    def _set(self, in_dir: str, encoding: str, label_default=0) :
-        self.load(in_dir, encoding)
+    def set_text(self, text) :
+        self.text = text
+        self._init_label_list()
 
-        # 조사 앞에 단어가 있으면 키워드로 추가
-        JosaExtractor(self.text, self.keyword_set)
-        self.add_keyword_set(in_dir, encoding)
-
-        # keyword_label_list 초기화
-        sentence = Sentence(self.text)    
+    '''
+        2. _init_label_list
+        keyword_label_list 초기화 기능
+        들어온 문장의 길이 만큼 label_list 값을 0으로 초기화
+    '''
+    def _init_label_list(self, label_default=0) :
+        sentence = Sentence(self.text)
         eojeol_len = len(sentence.eojeol_list)
 
         for _ in range(eojeol_len) :
             self.keyword_label_list.append(label_default)
 
     '''
-        2. load
-        keyword목록을 불러오는 기능
+        3. load_folder
+        폴더 내의 keyword_set을 전부 불러오는 기능
     '''
-    def load(self, in_file_path: str, encoding: str) :
-        file_paths = file_util.get_file_paths(in_file_path, True)
+    def load_folder(self, in_dir: str, encoding: str) :
+        file_paths = file_util.get_file_paths(in_dir, True)
 
         for file_path in file_paths :
-            in_file = file_util.open_file(file_path, encoding, "r")
+            self.load_file(file_path, encoding)
 
-            while True :
-                line = in_file.readline()
+    '''
+        4. load_file
+        keyword_set이 저장된 파일을 불러오는 기능
+    '''
+    def load_file(self, in_file_path: str, encoding: str) :
+        in_file = file_util.open_file(in_file_path, encoding, "r")
 
-                if not line :
-                    break
+        while True :
+            line = in_file.readline()
 
-                line = file_util.preprocess(line)
-                if string_util.is_empty(line, True) :
-                    continue
-                
-                if len(line) == 1 or line.isdigit() :
-                    continue
+            if not line :
+                break
 
-                self.keyword_set.add(line)
+            line = file_util.preprocess(line)
+            if string_util.is_empty(line, True) :
+                continue
+
+            if len(line) == 1 or line.isdigit() :
+                continue
+
+            self.keyword_set.add(line)
 
         in_file.close()
 
     '''
-        3. add_keyword_set
-        조사 앞에 단어가 있으면 해당 단어들도 키워드로 추가하는 기능
+        5. write_keyword_set
+        추가된 keyword_set 저장하는 기능
     '''
-    def add_keyword_set(self, out_file_path: str, encoding: str) :
-        file_paths = file_util.get_file_paths(out_file_path, True)
+    def write_keyword_set(self, out_file_path: str, encoding: str) :
+        out_file = file_util.open_file(out_file_path, encoding, "w")
 
-        for file_path in file_paths :
-            # 파일이 존재하면 제거하고 다시 저장
-            if file_util.exists(file_path) :
-                os.remove(file_path)
-
-            out_file = file_util.open_file(file_path, encoding, "a")
-
-            for keyword in sorted(list(self.keyword_set)) :
-                out_file.write(f"{keyword}\n")
+        for keyword in sorted(list(self.keyword_set)) :
+            out_file.write(f"{keyword}\n")
 
         out_file.close()
 
     '''
-        4. _print
+        6. _print
         세팅된 값을 확인하는 기능
     '''
     def _print(self) :
-        print(f"sentence : {self.text}\n")
-        
+        print(f"text : {self.text}\n")
+
         print(f"keyword_len : {len(self.keyword_set)}")
-        print(f"all keyword_set : {self.keyword_set}\n")
-        
-        print(f"keyword_label_list : {self.keyword_label_list}\n")
+        print(f"keyword_set : {self.keyword_set}\n")
+
+        print(f"keyword_label : {self.keyword_label_list}\n")
+
+# from josa_extractor import JosaExtractor
+
+# main
+# if __name__ == "__main__" :
+#     root_path = "../../"
+#     in_file_path = root_path + "data/input/keywords/keyword_data_test.txt"
+#     encoding = "UTF-8"
+
+#     text = "코로나는 중국에서 발병한 질병이다."
+
+#     keyword = KeywordExtractor()
+#     josa = JosaExtractor()
+
+#     keyword.set_text(text)
+#     josa.set_text(text)
+#     josa.extract_josa()
+#     keyword.load_file(in_file_path, encoding)
+#     josa.add_keyword_set(keyword.keyword_set)
+#     keyword.write_keyword_set(in_file_path, encoding)
+#     keyword._print()
