@@ -2,14 +2,17 @@ from _init import *
 
 from commons import file_util, string_util, container_util
 
+from josa_extractor import JosaExtractor
 from keyword_extractor import KeywordExtractor
 
-class MakeTrainData() :
+class MakeTrainData :
     '''
         Constructor
+        1. josa : josa 추출기
     '''
     def __init__(self) :
-        pass
+        self.josa = JosaExtractor()
+
     '''
         Methods
         1. make_folder
@@ -20,21 +23,21 @@ class MakeTrainData() :
         1. make_folder
         train_dataset을 저장하는 디렉토리 생성하는 기능
     '''
-    def make_folder(self, in_dir: str, in_keyword_dir: str, out_file_path: str, encoding: str, delim: str, window_size) :
+    def make_folder(self, in_dir: str, in_keyword_path: str, out_file_path: str, encoding: str, delim: str, window_size: int) :
         if file_util.exists(out_file_path) :
             os.remove(out_file_path)
 
         in_file_paths = file_util.get_file_paths(in_dir, True)
 
         for in_file_path in in_file_paths :
-            self._make_file(in_file_path, in_keyword_dir, out_file_path, encoding, delim, window_size)
+            self._make_file(in_file_path, in_keyword_path, out_file_path, encoding, delim, window_size)
 
     '''
         2. _make_file
         train_dataset 생성하는 기능
         들어온 텍스트에서 키워드가 있으면 라벨링 후 학습 데이터를 생성
     '''
-    def _make_file(self, in_file_path: str, in_keyword_dir: str, out_file_path: str, encoding: str, delim: str, window_size) :
+    def _make_file(self, in_file_path: str, in_keyword_path: str, out_file_path: str, encoding: str, delim: str, window_size: int) :
         in_file = file_util.open_file(in_file_path, encoding, "r")
         out_file = file_util.open_file(out_file_path, encoding, "a")
 
@@ -47,22 +50,28 @@ class MakeTrainData() :
             line = file_util.preprocess(line)
             if string_util.is_empty(line, True) :
                 continue
-
-            keyword = KeywordExtractor(line, in_keyword_dir)
-            line = string_util.trim(keyword.text.split(), True)
+            
+            keyword = KeywordExtractor()
+            keyword.set_text(line)
+            keyword.load_file(in_keyword_path, encoding)
+            line = string_util.trim(line.split(), True)
             eojeol_len = len(line)
 
             # keyword_labeling
             # 문장을 어절 단위로 쪼갠 후 keyword_labeling 진행
             idx = 0
             for eojeol in line :
+                self.josa.set_text(eojeol)
+                self.josa.extract_josa()
+                self.josa.add_keyword_set(keyword.keyword_set)
+                keyword.write_keyword_set(in_keyword_path, encoding)
 
                 # 어절을 음절 단위로 쪼갠 후 keyword 목록에 있는지 확인하고 있다면 1로 labeling
                 for word in sorted(list(keyword.keyword_set), reverse=True) :
                     if eojeol.startswith(word) :
                         keyword.keyword_label_list[idx] = 1
                 idx += 1
-            
+
             # 어절 단위로 학습 데이터 생성
             for i in range(eojeol_len) :
                 feature = container_util.get_window(line, i, window_size, " ")
@@ -74,12 +83,14 @@ class MakeTrainData() :
         out_file.close()
 
 # main
-if __name__ == "__main__" :
-    work_dir = "../../"
-    in_dir = work_dir + "data/input/sentences/"
-    in_keyword_dir = work_dir + "data/input/keywords/"
-    out_dir = work_dir + "data/keyword_extract/train_data_out.txt"
-    encoding = "UTF-8"
+# if __name__ == "__main__" :
+#     root_path = "../../"
+#     in_dir = root_path + "data/keyword_extract/test/input/"
+#     in_keyword_path = root_path + "data/input/keywords/keyword_data_test.txt"
+#     out_file_path = root_path + "data/keyword_extract/test/output/train_data_out.txt"
+#     encoding = "UTF-8"
+#     delim = "\t"
 
-    train_data_maker = MakeTrainData()
-    train_data_maker.make_folder(in_dir, in_keyword_dir, out_dir, encoding, "\t", 3)
+#     train_data = MakeTrainData()
+
+#     train_data.make_folder(in_dir, in_keyword_path, out_file_path, encoding, delim, 3)
