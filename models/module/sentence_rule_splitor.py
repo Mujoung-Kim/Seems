@@ -61,10 +61,3 @@ def split_sentence(text: str):
     
     sentences = string_util.trim(sentences, True)
     return sentences
-
-# if __name__ == "__main__":
-#     text = '이건 테스트 문장1. 이건 테스트 문장2 이건 테스트 문장!?? 이건 테스트 문장4'
-    
-#     sentences = split_sentence(text)
-#     for sentence in sentences:
-#         print(sentence)
