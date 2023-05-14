@@ -4,7 +4,7 @@ import sys
 PATH = os.path.abspath(os.path.dirname(__file__))
 #print(f"\ncurrent_path : {PATH}")
 
-ROOT_DEPTH = 1
+ROOT_DEPTH = 2
 for i in range(ROOT_DEPTH) :
     PATH = os.path.dirname(PATH)
 #print(f"\nroot_path : {PATH}, depth : {ROOT_DEPTH}")
