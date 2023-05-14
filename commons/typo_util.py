@@ -66,7 +66,7 @@ def convert_jamo_hangeul(emjeol_jamo_str):
     return emjeol_str
 
 def check_eojeol_hangeul(eojeol_str:str, default_label = 0):
-    if eojeol_str.isascii(): # 숫자 + 특수문자
+    if eojeol_str.isascii() or len(eojeol_str) == 1: # 숫자 + 특수문자
         return False, None, None
     
     else : # 한글 특수문자 영어가 섞인 어절
@@ -91,8 +91,12 @@ def check_eojeol_hangeul(eojeol_str:str, default_label = 0):
                 special_symbol += emjeol_str
 
         if hangeul_str:
-            divided_eojeol_list.append(hangeul_str)
-            eojeol_han_label_list.append(1)
+            if len(hangeul_str) == 1:
+                divided_eojeol_list.append(special_symbol)
+                eojeol_han_label_list.append(default_label)
+            else:
+                divided_eojeol_list.append(hangeul_str)
+                eojeol_han_label_list.append(1)
         if special_symbol:
             divided_eojeol_list.append(special_symbol)
             eojeol_han_label_list.append(default_label)
