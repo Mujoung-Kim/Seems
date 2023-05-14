@@ -2,7 +2,7 @@ from _init import *
 
 from commons import file_util, string_util, container_util
 
-from keyword_extractor import KeywordExtractor
+from models.module import KeywordExtractor
 
 class MakeTrainData() :
     '''
@@ -72,14 +72,3 @@ class MakeTrainData() :
 
         in_file.close()
         out_file.close()
-
-# main
-if __name__ == "__main__" :
-    work_dir = "../../"
-    in_dir = work_dir + "data/input/sentences/"
-    in_keyword_dir = work_dir + "data/input/keywords/"
-    out_dir = work_dir + "data/keyword_extract/train_data_out.txt"
-    encoding = "UTF-8"
-
-    train_data_maker = MakeTrainData()
-    train_data_maker.make_folder(in_dir, in_keyword_dir, out_dir, encoding, "\t", 3)
