@@ -20,7 +20,7 @@ class DefaultModel:
         3. device : cpu or gpu
         4. our_model : 학습된 모델
     '''
-    def __init__(self, max_seq_len: int, dropout_rate=0.3, num_labels=2, model_name='klue/bert-base') :
+    def __init__(self, max_seq_len: int, dropout_rate=0.5, num_labels=2, model_name='klue/bert-base') :
         self.logger = get_logger(__name__)
         self.model_name = model_name
         self.max_seq_len = max_seq_len
@@ -122,7 +122,7 @@ class DefaultModel:
         self.our_model.compile(optimizer=_optimizer, loss=_loss, metrics = ['accuracy'])
 
         early_stopping = EarlyStopping(
-            monitor="accuracy",
+            monitor="val_accuracy",
             mode="max",
             patience=patience)
 

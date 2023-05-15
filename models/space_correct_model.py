@@ -41,3 +41,28 @@ class SpaceCorrectModel(DefaultModel):
             
         in_file.close()
         out_file.close()
+
+    def predict(self, text: str) :
+        sentences = []
+
+        sentence = Sentence()
+        sentence.set(text)
+
+        feature_label_datas = sentence.get_feature_label_datas(is_emjeol=True, is_train=False)
+        predict_xs, _ = self.reformator.reformat_datas(feature_label_datas)
+        
+        predict_ys = super()._predict(predict_xs)
+        print(f"predict_ys : {predict_ys}")
+
+        emjeol_list = sentence.emjeol_list
+        emjeol_len = len(emjeol_list)
+
+        start = 0
+        for i in range(emjeol_len) :
+            if i == emjeol_len - 1 :
+                sentences.append(" ".join(emjeol_list[start:]))
+            elif predict_ys[i] == 1 :
+                sentences.append(" ".join(emjeol_list[start:i+1]))
+                start = i + 1
+
+        return sentences
