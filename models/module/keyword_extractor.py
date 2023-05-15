@@ -49,9 +49,9 @@ class KeywordExtractor :
             self.eojeol_list.append(eojeol)
             self.keyword_label_list.append(0)
 
-            self.josa_extract.set_text(eojeol)
-            self.josa_extract.extract_josa()
-            self.josa_extract.add_keyword_set(self.keyword_set)
+            # self.josa_extract.set_text(eojeol)
+            # self.josa_extract.extract_josa()
+            # self.josa_extract.add_keyword_set(self.keyword_set)
 
             # 어절을 음절 단위로 쪼갠 후 keyword 목록에 있는지 확인하고 있다면 1로 labeling
             for keyword in sorted(list(self.keyword_set), reverse=True) :
@@ -124,7 +124,7 @@ class KeywordExtractor :
         5. write_keyword_set
         추가된 keyword_set 저장하는 기능
     '''
-    def write_keyword_set(self, out_file_path: str, encoding: str) :
+    def write_keyword_set(self, out_file_path: str, encoding: str="UTF-8") :
         out_file = file_util.open_file(out_file_path, encoding, "w")
 
         for keyword in sorted(list(self.keyword_set)) :
