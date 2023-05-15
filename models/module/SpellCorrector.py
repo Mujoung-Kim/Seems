@@ -7,19 +7,21 @@ from commons import typo_util
 class SpellCorrector() :
 
     def __init__(self):
-        self.work_dir = "commons/freq_maker/data/"
+        self.work_dir = "./commons/freq_make/data/"
         self.josa_dir = self.work_dir + 'josa_set.pickle'
         self.eomi_dir = self.work_dir + 'eomi_set.pickle'
         self.freq_dir = self.work_dir + 'term_freq_dict.pickle'
+        self.term_jamo_dir = self.work_dir + 'term_jamo_dict.pickle'
+        self.jamo_term_dir = self.work_dir + 'jamo_term_dict.pickle'
 
         self.josa_set = set()
         self.eomi_set = set()
         self.term_freq_dict = {}
         self.term_jamo_dict = {}
-        self._open_file(self.josa_dir, self.eomi_dir, self.freq_dir)
-        self._make_jamo_dict()
+        self.jamo_term_dict = {}
+        self._open_file(self.josa_dir, self.eomi_dir, self.freq_dir, self.term_jamo_dir, self.jamo_term_dir)
 
-    def _open_file(self, josa_dir, eomi_dir, freq_dir):
+    def _open_file(self, josa_dir: str, eomi_dir: str, freq_dir: str, term_jamo_dir: str, jamo_term_dir: str):
         with open(josa_dir, 'rb') as fr:
             self.josa_set = pickle.load(fr)
 
@@ -29,14 +31,13 @@ class SpellCorrector() :
         with open(freq_dir, 'rb') as fr:
             self.term_freq_dict = pickle.load(fr)
     
-    def _make_jamo_dict(self):
-        for key in self.term_freq_dict:
-            jamo = ''
-            for emjeol_str in key:
-                jamo += typo_util.divide_jamo(emjeol_str)
-            self.term_jamo_dict[jamo] = key
+        with open(term_jamo_dir, 'rb') as fr:
+            self.term_jamo_dict = pickle.load(fr)
 
-    def discriminate_typo(self, eojeol_str):
+        with open(jamo_term_dir, 'rb') as fr:
+            self.jamo_term_dict = pickle.load(fr)
+
+    def discriminate_typo(self, eojeol_str: str):
         result, eojeol_list, eojeol_label_list = typo_util.check_eojeol_hangeul(eojeol_str)
         if result:
             for i in range(len(eojeol_label_list)):
@@ -49,27 +50,45 @@ class SpellCorrector() :
         else:
             return eojeol_str
 
-    def convert_typo_correct(self, typo_eojeol):
-        typo_jamo = typo_util.convert_eojeol_jamo(typo_eojeol)
-        len_typo = len(typo_jamo)
+    def convert_typo_correct(self, typo_eojeol: str):
         correct = (10, '')
-
-        for correct_jamo in self.term_jamo_dict:
-            len_correct = len(correct_jamo)
-            if abs(len_correct - len_typo) > 1:
+        for correct_eojeol in self.term_freq_dict:
+            if abs(len(correct_eojeol) - len(typo_eojeol)) > 1:
+                continue
+            correct_jamo = self.term_jamo_dict[correct_eojeol]
+            typo_jamo = typo_util.convert_eojeol_jamo(typo_eojeol)
+            if abs(len(correct_jamo) - len(typo_jamo)) > 1:
                 continue
             distance = self.minimum_edit_distance(typo_jamo, correct_jamo)
 
             if distance < correct[0]:
                 correct = min(correct, (distance, correct_jamo))
-
-            if distance == 1:
+            
+            if distance == 0:
                 break
-        
-        correct_str = self.term_jamo_dict[correct[1]]
-        return correct_str
 
-    def minimum_edit_distance(self, typo_jamo, correct_jamo):
+        correct_str = self.jamo_term_dict[correct[1]]
+        return correct_str
+        # typo_jamo = typo_util.convert_eojeol_jamo(typo_eojeol)
+        # len_typo = len(typo_jamo)
+        # correct = (10, '')
+
+        # for correct_jamo in self.term_jamo_dict:
+        #     len_correct = len(correct_jamo)
+        #     if abs(len_correct - len_typo) > 1:
+        #         continue
+        #     distance = self.minimum_edit_distance(typo_jamo, correct_jamo)
+
+        #     if distance < correct[0]:
+        #         correct = min(correct, (distance, correct_jamo))
+
+        #     if distance == 1:
+        #         break
+        
+        # correct_str = self.term_jamo_dict[correct[1]]
+        # return correct_str
+
+    def minimum_edit_distance(self, typo_jamo: str, correct_jamo: str):
         deletion_cost = lambda x: 1
         substitution_cost = lambda x, y: 0 if x==y else 2
         insertion_cost = lambda x: 1

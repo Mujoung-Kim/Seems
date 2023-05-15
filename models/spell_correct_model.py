@@ -67,7 +67,7 @@ class SpellCorrectModel(DefaultModel):
         sentence = Sentence()
         sentence.set(line)
         
-        feature_label_datas = sentence.get_feature_label_datas(in_train=False)
+        feature_label_datas = sentence.get_feature_label_datas(is_train=False)
         predict_xs, _ = self.reformator.reformat_datas(feature_label_datas)
         
         predict_ys = super()._predict(predict_xs)
