@@ -34,7 +34,7 @@ class SpaceCorrectModel(DefaultModel):
             sentence = Sentence()
             sentence.set(line)
             
-            feature_label_datas = sentence.get_feature_label_datas(is_emjeol=True)
+            feature_label_datas = sentence.get_feature_label_datas(is_train=True, is_emjeol=True)
             
             for feature_label_data in feature_label_datas:
                 out_file.write(f'{feature_label_data[0]}{delim}{feature_label_data[1]}\n')
