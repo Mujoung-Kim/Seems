@@ -78,7 +78,7 @@ class DefaultModel:
 
         # hidden_layer
         dropout = tf.keras.layers.Dropout(dropout_rate)(bert_outputs[0])
-        layer = tf.keras.layers.Dense(128, activation="relu")(dropout)
+        layer = tf.keras.layers.Dense(512, activation="relu")(dropout)
         dropout = tf.keras.layers.Dropout(dropout_rate)(layer)
         layer = tf.keras.layers.Dense(256, activation="relu")(dropout)
         layer = tf.keras.layers.Dense(num_labels, activation="softmax", kernel_initializer=tf.keras.initializers.TruncatedNormal(stddev=0.02))(layer)
@@ -122,8 +122,8 @@ class DefaultModel:
         self.our_model.compile(optimizer=_optimizer, loss=_loss, metrics = ['accuracy'])
 
         early_stopping = EarlyStopping(
-            monitor="loss",
-            mode="min",
+            monitor="accuracy",
+            mode="max",
             patience=patience)
 
         model_checkpoint = ModelCheckpoint(
