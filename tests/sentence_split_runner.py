@@ -3,10 +3,10 @@ from _init import *
 from models.sentence_split_model import SentenceSplitModel
 
 MAX_SEQ_LEN = 32
-EPOCHS = 1
+EPOCHS = 50
 BATCH_SIZE = 128
-LEARNING_RATE = 0.01
-PATIENCE = 10
+LEARNING_RATE = 1e-5
+PATIENCE = 3
 
 model = SentenceSplitModel(MAX_SEQ_LEN)
 
@@ -24,7 +24,7 @@ model.train(model_path, EPOCHS, BATCH_SIZE, LEARNING_RATE, PATIENCE)
 # model.load_model(model_path)
 # model.performance_measure()
 
-# text = '자연단음계 화성단음계 가락단음계는 다음과 같다. 그 이름은 필살의 상처를 입히는 창 또는 톱니 모양 새김눈이 있는 창 볼록한 창이라는 뜻이다.'
+# text = '가라루파는 터키의 온천에 사는 민물고기이다. 하지만 이 물고기가 실제로 피부병을 치료하는 데 효과가 있는지에 대해서는 논란이 있다. 가라루파는 주로 터키, 시리아, 이란, 그리고 이라크에 분포한다.'
 # sentences = model.predict(text)
 
 # for sentence in sentences:
