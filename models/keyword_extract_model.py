@@ -83,25 +83,16 @@ class KeywordExtractModel(DefaultModel) :
                 break
             elif i == eojeol_len - 1 :
                 sentences.append(" ".join(eojeol_list[start:]))
+                keywords.append("")
             elif predict_ys[i] == 1 :
                 self.josa_extract.set_text("".join(eojeol_list[start:i+1]))
                 sentences.append(" ".join(eojeol_list[start:i+1]))
                 keywords.append("".join(self.josa_extract.extract_josa()[start:i+1]))
                 keyword.write_keyword_set(f"{in_dir}train_keyword_set.txt")
                 start = i + 1
-
-            # if i == eojeol_len - 1 :
-            #     self.josa_extract.set_text("".join(eojeol_list[start:]))
-            #     keywords.append("".join(self.josa_extract.extract_josa()[start : i + 1]))
-            #     self.josa_extract.add_keyword_set(keyword.keyword_set)
-            #     sentences.extend(eojeol_list[start:])
-            #     keywords.append("".join(self.josa_extract.extract_josa()[start:]))
-            # elif predict_ys[i] == 1 :
-            #     self.josa_extract.set_text("".join(eojeol_list[start:i+ 1]))
-            #     keywords.append("".join(self.josa_extract.extract_josa()[start:i+1]))
-            #     self.josa_extract.add_keyword_set(keyword.keyword_set)
-            #     sentences.append(" ".join(eojeol_list[start : i + 1]))
-            #     keyword.write_keyword_set(f"{in_dir}train_keyword_set.txt")
-            #     start = i + 1
+            else :
+                sentences.append(" ".join(eojeol_list[start:i+1]))
+                keywords.append("")
+                start = i + 1
             
         return [sentences, keywords]
