@@ -7,10 +7,10 @@ from commons import typo_util
 class SpellCorrector() :
 
     def __init__(self):
-        self.work_dir = "./commons/freq_make/data/"
+        self.work_dir = "commons/freq_make/data/"
         self.josa_dir = self.work_dir + 'josa_set.pickle'
         self.eomi_dir = self.work_dir + 'eomi_set.pickle'
-        self.freq_dir = self.work_dir + 'term_freq_dict.pickle'
+        self.term_freq_dir = self.work_dir + 'term_freq_dict.pickle'
         self.term_jamo_dir = self.work_dir + 'term_jamo_dict.pickle'
         self.jamo_term_dir = self.work_dir + 'jamo_term_dict.pickle'
 
@@ -19,16 +19,16 @@ class SpellCorrector() :
         self.term_freq_dict = {}
         self.term_jamo_dict = {}
         self.jamo_term_dict = {}
-        self._open_file(self.josa_dir, self.eomi_dir, self.freq_dir, self.term_jamo_dir, self.jamo_term_dir)
+        self._open_file(self.josa_dir, self.eomi_dir, self.term_freq_dir, self.term_jamo_dir, self.jamo_term_dir)
 
-    def _open_file(self, josa_dir: str, eomi_dir: str, freq_dir: str, term_jamo_dir: str, jamo_term_dir: str):
+    def _open_file(self, josa_dir: str, eomi_dir: str, term_freq_dir: str, term_jamo_dir: str, jamo_term_dir: str):
         with open(josa_dir, 'rb') as fr:
             self.josa_set = pickle.load(fr)
 
         with open(eomi_dir, 'rb') as fr:
             self.eomi_set = pickle.load(fr)
 
-        with open(freq_dir, 'rb') as fr:
+        with open(term_freq_dir, 'rb') as fr:
             self.term_freq_dict = pickle.load(fr)
     
         with open(term_jamo_dir, 'rb') as fr:
@@ -69,24 +69,6 @@ class SpellCorrector() :
 
         correct_str = self.jamo_term_dict[correct[1]]
         return correct_str
-        # typo_jamo = typo_util.convert_eojeol_jamo(typo_eojeol)
-        # len_typo = len(typo_jamo)
-        # correct = (10, '')
-
-        # for correct_jamo in self.term_jamo_dict:
-        #     len_correct = len(correct_jamo)
-        #     if abs(len_correct - len_typo) > 1:
-        #         continue
-        #     distance = self.minimum_edit_distance(typo_jamo, correct_jamo)
-
-        #     if distance < correct[0]:
-        #         correct = min(correct, (distance, correct_jamo))
-
-        #     if distance == 1:
-        #         break
-        
-        # correct_str = self.term_jamo_dict[correct[1]]
-        # return correct_str
 
     def minimum_edit_distance(self, typo_jamo: str, correct_jamo: str):
         deletion_cost = lambda x: 1

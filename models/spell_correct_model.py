@@ -2,6 +2,7 @@ from _init import *
 
 from commons import file_util, container_util, typo_util
 from commons.sentence import Sentence
+from models.module.spell_collector import SpellCorrector
 
 from models.default_model import DefaultModel
 
@@ -50,7 +51,6 @@ class SpellCorrectModel(DefaultModel):
                         typo_eojeol = typo_util.make_eojeol_typo(div_eojeol_list, div_eojeol_label_list)
                         if typo_eojeol not in typo_set:
                             eojeol_list = sentence.eojeol_list[:i] + [typo_eojeol] + sentence.eojeol_list[i+1:]
-                            # eojeol_label_list = sentence.eojeol_label_list[:i] + [1] + sentence.eojeol_label_list[i+1:]
                             
                             train_sentence = container_util.get_window(eojeol_list, i, 3, ' ')
                             out_file.write(f'{train_sentence}{delim}1\n')
@@ -72,3 +72,14 @@ class SpellCorrectModel(DefaultModel):
         
         predict_ys = super()._predict(predict_xs)
         print(f'predict_ys : {predict_ys}')
+        for i in range(len(predict_ys)):
+            if predict_ys[i]:
+                spell = SpellCorrector()
+                sentence.eojeol_list[i] = spell.discriminate_typo(sentence.eojeol_list[i])
+
+        return " ".join(sentence.eojeol_list)
+    
+# main
+if __name__ == "__main__" :
+    pass
+    # spell_correct = SpellCorrectModel(64)

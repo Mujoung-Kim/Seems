@@ -60,9 +60,9 @@ class SpaceCorrectModel(DefaultModel):
         start = 0
         for i in range(emjeol_len) :
             if i == emjeol_len - 1 :
-                sentences.append(" ".join(emjeol_list[start:]))
+                sentences.append("".join(emjeol_list[start:]))
             elif predict_ys[i] == 1 :
-                sentences.append(" ".join(emjeol_list[start:i+1]))
+                sentences.append("".join(emjeol_list[start:i+1]))
                 start = i + 1
 
-        return sentences
+        return " ".join(sentences)
