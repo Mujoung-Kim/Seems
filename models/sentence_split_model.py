@@ -65,13 +65,13 @@ class SentenceSplitModel(DefaultModel):
         
         eojeol_list = sentence.eojeol_list
         eojeol_len = len(eojeol_list)
-        
+
         start = 0
         for i in range(eojeol_len):
             if i == eojeol_len-1:
-                sentences.append(' '.join(eojeol_list[start:]))
+                sentences.append(''.join(eojeol_list[start:]))
             elif predict_ys[i] == 1:
-                sentences.append(' '.join(eojeol_list[start:i+1]))
+                sentences.append(''.join(eojeol_list[start:i+1]))
                 start = i+1
         
         return sentences

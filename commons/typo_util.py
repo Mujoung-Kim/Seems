@@ -122,7 +122,7 @@ def typo_position_convert(jamo):
 
 def make_eojeol_typo(eojeol_list, eojeol_label_list):
 
-    if len(eojeol_list) > 1:
+    if len(eojeol_list):
         index_list = list(filter(lambda x: eojeol_label_list[x] == 1, range(len(eojeol_label_list))))
         eojeol_idx = random.choice(index_list)
         eojeol_str = eojeol_list[eojeol_idx]

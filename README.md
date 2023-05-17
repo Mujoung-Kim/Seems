@@ -36,27 +36,19 @@
 ## Model performance
 
   ### Sentence split model
-    - column : max_seq_len   batch_size   accuracy
-    - index : model_layer
-    - 위의 형태로 표 들어감
+  ![](/figures/SentenceSplitModel.png)
 <br>
 
   ### Space correct model
-    - column : max_seq_len   batch_size   accuracy
-    - index : model_layer
-    - 위의 형태로 표 들어감
+  ![](/figures/SpaceCorrectModel.png)
 <br>
 
   ### Keyword extract model
-    - column : max_seq_len   batch_size   accuracy
-    - index : model_layer
-    - 위의 형태로 표 들어감
+  ![](/figures/KeywordExtractModel.png)
 <br>
 
   ### Spell correct model
-    - column : max_seq_len   batch_size   accuracy
-    - index : model_layer
-    - 위의 형태로 표 들어감
+  ![](/figures/SpellCorrectModel.png)
 <br>
 
 ## Library run example
