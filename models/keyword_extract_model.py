@@ -7,6 +7,7 @@ from models.module.keyword_extractor import KeywordExtractor
 from models.module.josa_extractor import JosaExtractor
 
 class KeywordExtractModel(DefaultModel) :
+# class KeywordExtractModel :
     '''
         Constructor
         1. josa_extract : 조사 추출하는 객체
@@ -73,12 +74,12 @@ class KeywordExtractModel(DefaultModel) :
         eojeol_list = keyword.eojeol_list
         eojeol_len = len(eojeol_list)
 
-        start = 0
+        start, idx = 0, 0
         for i in range(eojeol_len) :
             if i == eojeol_len - 1 and predict_ys[i] == 1 :
                 self.josa_extract.set_text("".join(eojeol_list[start:]))
                 sentences.append(" ".join(eojeol_list[start:]))
-                keywords.append("".join(self.josa_extract.extract_josa()[-1]))
+                keywords.append("".join(self.josa_extract.extract_josa()[start:]))
                 keyword.write_keyword_set(f"{in_dir}train_keyword_set.txt")
                 break
             elif i == eojeol_len - 1 :
@@ -87,12 +88,13 @@ class KeywordExtractModel(DefaultModel) :
             elif predict_ys[i] == 1 :
                 self.josa_extract.set_text("".join(eojeol_list[start:i+1]))
                 sentences.append(" ".join(eojeol_list[start:i+1]))
-                keywords.append("".join(self.josa_extract.extract_josa()[start:i+1]))
+                keywords.append("".join(self.josa_extract.extract_josa()[idx]))
                 keyword.write_keyword_set(f"{in_dir}train_keyword_set.txt")
                 start = i + 1
+                idx += 1
             else :
                 sentences.append(" ".join(eojeol_list[start:i+1]))
                 keywords.append("")
                 start = i + 1
-            
+
         return [sentences, keywords]
