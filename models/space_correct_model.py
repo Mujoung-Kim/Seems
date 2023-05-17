@@ -65,4 +65,4 @@ class SpaceCorrectModel(DefaultModel):
                 sentences.append("".join(emjeol_list[start:i+1]))
                 start = i + 1
 
-        return " ".join(sentences)
+        return sentences
