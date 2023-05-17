@@ -18,7 +18,7 @@ out_file_path = work_dir + 'data/spell_correct/train_spell_correct.txt'
 model.make_train_data(in_path, out_file_path)
 model.load_train_data(out_file_path, '\t', 'utf-8', 9, 1)
 
-model_path = work_dir + 'resources/spell_correct/specll_correct_model.h5'
+model_path = work_dir + 'data/spell_correct/spell_correct_model.h5'
 
 model.train(model_path, EPOCHS, BATCH_SIZE, LEARNING_RATE, PATIENCE)
 
